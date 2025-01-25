@@ -2,7 +2,7 @@
 import React from "react";
 import { useNavigate } from "react-router-dom";
 import { useTeamContext } from "./TeamContext";
-import TopBar from "./TopBar";
+import MinimalTopBar from "./MinimalTopBar";
 
 function BillingPage() {
     const navigate = useNavigate();
@@ -43,7 +43,7 @@ function BillingPage() {
 
     return (
         <div className="wrapper">
-            <TopBar />
+            <MinimalTopBar />
 
             <h1>Billing</h1>
             <div className="section">

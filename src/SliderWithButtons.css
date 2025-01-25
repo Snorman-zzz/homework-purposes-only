@@ -1,0 +1,39 @@
+/* SliderWithButtons.css */
+
+.slider-with-buttons {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.slider-button {
+    width: 24px;
+    height: 24px;
+    background: none;
+    color: #333; /* Adjust to match your application's text color */
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 18px;
+    line-height: 1;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.2s ease;
+}
+
+.slider-button:hover {
+    color: #000; /* Slightly darker on hover for feedback */
+}
+
+.slider {
+    flex: 1;
+}
+
+.slider-value {
+    width: 40px;
+    text-align: center;
+    font-weight: bold;
+    color: #333; /* Adjust to match your application's text color */
+}

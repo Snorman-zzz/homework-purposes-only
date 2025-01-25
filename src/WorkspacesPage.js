@@ -2,6 +2,7 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTeamContext } from "./TeamContext";
+import MinimalTopBar from "./MinimalTopBar";
 
 function WorkspacesPage() {
     const navigate = useNavigate();
@@ -9,13 +10,24 @@ function WorkspacesPage() {
 
     const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
 
+    /**
+     * Enforce plan-based workspace limits:
+     *  - Build => 1 max
+     *  - Launch => 1 max
+     *  - Scale => 5 max
+     *  - Enterprise => unlimited
+     */
     function canAddWorkspace() {
-        // e.g. Build plan => 1 workspace, Launch => 1, Scale => 5, Enterprise => unlimited
         if (plan === "Build" && workspaces.length >= 1) {
             return false;
         }
-        // if (plan === "Launch" && workspaces.length >= 1) return false;
-        // if (plan === "Scale" && workspaces.length >= 5) return false;
+        if (plan === "Launch" && workspaces.length >= 1) {
+            return false;
+        }
+        if (plan === "Scale" && workspaces.length >= 5) {
+            return false;
+        }
+        // For "Enterprise", or any plan not listed, we allow unlimited
         return true;
     }
 
@@ -26,29 +38,18 @@ function WorkspacesPage() {
         }
         const name = prompt("Workspace name?");
         if (name) {
-            addWorkspace(name); // stored in context
+            const newWs = addWorkspace(name);
+            navigate(`/team-details/${newWs.id}`);
         }
     }
 
     function handleOpenWorkspace(wsId) {
-        // pass workspace ID
         navigate(`/team-details/${wsId}`);
     }
 
     return (
         <div className="wrapper">
-            <div className="top-bar">
-                <button onClick={() => navigate("/")}>Home</button>
-                <button onClick={() => navigate("/team-details/1")} style={{ marginLeft: "8px" }}>
-                    Team
-                </button>
-                <button onClick={() => navigate("/billing")} style={{ marginLeft: "8px" }}>
-                    Billing
-                </button>
-                <button onClick={() => navigate("/reports")} style={{ marginLeft: "8px" }}>
-                    Report
-                </button>
-            </div>
+            <MinimalTopBar />
 
             <h1>Workspaces (Plan: {plan})</h1>
 
@@ -57,7 +58,7 @@ function WorkspacesPage() {
                 {workspaces.map((ws) => (
                     <div key={ws.id} style={{ marginBottom: "8px" }}>
                         <button
-                            style={{ backgroundColor: "#333", marginRight: "8px" }}
+                            style={{ backgroundColor: "#333", marginRight: "8px", color: "#fff" }}
                             onClick={() => handleOpenWorkspace(ws.id)}
                         >
                             {ws.name}
@@ -69,7 +70,7 @@ function WorkspacesPage() {
 
                 {showUpgradePrompt && (
                     <div className="upgrade-alert" style={{ marginTop: "12px" }}>
-                        <p>You reached the limit for {plan} plan. Please upgrade!</p>
+                        <p>You reached the limit for the {plan} plan. Please upgrade!</p>
                         <button onClick={() => navigate("/upgrade")}>Upgrade</button>
                     </div>
                 )}

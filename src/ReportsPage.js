@@ -1,46 +1,94 @@
+// ReportsPage.js
 import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useParams } from "react-router-dom";
 import { useTeamContext } from "./TeamContext";
 import { Pie } from "react-chartjs-2";
-import "chart.js/auto";
-import "./styles.css"; // ensure your updated CSS is imported
 import TopBar from "./TopBar";
+import "./styles.css";
 
 function ReportsPage() {
-    const navigate = useNavigate();
-    const { format, areas, members } = useTeamContext();
     const [searchTerm, setSearchTerm] = useState("");
+    const { workspaceId } = useParams();
+    const { getWorkspaceById } = useTeamContext();
 
+    const workspace = getWorkspaceById(workspaceId);
+    if (!workspace) {
+        return (
+            <div className="wrapper">
+                <TopBar />
+                <h1>Workspace not found!</h1>
+            </div>
+        );
+    }
+
+    // Destructure out the data
+    const {
+        format,
+        reservedPools = [],
+        areas = [],
+        intangibleFactors = [],
+        members = [],
+    } = workspace;
+
+    // 1) Filter members by search term
     const filteredMembers = members.filter((m) =>
         m.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
-    // By Project (Areas)
+    // 2) "By Project" chart (reservedPools + areas + intangibleFactors)
+    const chartLabels = [
+        ...reservedPools.map((p) => p.name),
+        ...areas.map((a) => a.name),
+        ...intangibleFactors.map((f) => f.name),
+    ];
+    const chartValues = [
+        ...reservedPools.map((p) => p.weight),
+        ...areas.map((a) => a.weight),
+        ...intangibleFactors.map((f) => f.weight),
+    ];
+
     const projectData = {
-        labels: areas.map((a) => a.name),
+        labels: chartLabels,
         datasets: [
             {
-                data: areas.map((a) => a.weight),
+                data: chartValues,
                 backgroundColor: [
-                    "#6366f1",
+                    "#8b5cf6",
                     "#a78bfa",
-                    "#c084fc",
-                    "#ec4899",
-                    "#f43f5e",
-                    "#fb7185",
-                    "#34d399",
+                    "#ef4444",
+                    "#f97316",
+                    "#f59e0b",
+                    "#84cc16",
                     "#22c55e",
-                ].slice(0, areas.length),
+                    "#14b8a6",
+                    "#3b82f6",
+                    "#ec4899",
+                    "#a855f7",
+                    "#f43f5e",
+                    "#10b981",
+                    "#0ea5e9",
+                    "#d946ef",
+                ].slice(0, chartLabels.length),
             },
         ],
     };
 
-    // By Team Member (Equity)
+    // 3) "By Team Member (Equity)" CHART
+    // Now includes each member's totalEquity PLUS the reservedPools slices
+    const combinedLabels = [
+        ...members.map((m) => m.name),
+        ...reservedPools.map((rp) => rp.name),
+    ];
+    const combinedValues = [
+        ...members.map((m) => m.totalEquity),
+        ...reservedPools.map((rp) => rp.weight),
+    ];
+
     const memberData = {
-        labels: members.map((m) => m.name),
+        labels: combinedLabels,
         datasets: [
             {
-                data: members.map((m) => m.totalEquity),
+                data: combinedValues,
                 backgroundColor: [
                     "#f97316",
                     "#f59e0b",
@@ -50,31 +98,39 @@ function ReportsPage() {
                     "#3b82f6",
                     "#8b5cf6",
                     "#ec4899",
-                ].slice(0, members.length),
+                    "#a855f7",
+                    "#f43f5e",
+                    "#2dd4bf",
+                    "#eab308",
+                    "#6366f1",
+                    "#ef4444",
+                    "#14b8a6",
+                ].slice(0, combinedLabels.length),
             },
         ],
     };
 
-    // Chart options
-    const chartOptions = {
-        responsive: true,
-        maintainAspectRatio: false,
-    };
+    // 4) TABLE & CSV: Exclude reservedPools from the columns
+    const tableLabels = [
+        ...areas.map((a) => a.name),
+        ...intangibleFactors.map((f) => f.name),
+    ];
 
+    // CSV Export (still skipping reservedPools for the column data)
     function exportToCSV() {
         let csv = "Team Member,";
-        areas.forEach((a) => {
-            csv += `${a.name},`;
+        tableLabels.forEach((header) => {
+            csv += `${header},`;
         });
         csv += "Total Equity\n";
 
         filteredMembers.forEach((m) => {
             csv += `${m.name},`;
-            areas.forEach((a) => {
-                const val = m.contributions[a.name] || 0;
-                csv += val + "%,";
+            tableLabels.forEach((lbl) => {
+                const val = m.contributions[lbl] || 0;
+                csv += `${val}%,`;
             });
-            csv += m.totalEquity + "%\n";
+            csv += `${m.totalEquity}%\n`;
         });
 
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
@@ -90,12 +146,11 @@ function ReportsPage() {
     return (
         <div className="wrapper">
             <TopBar />
+            <h1>Reports Page (Workspace #{workspaceId})</h1>
+            <h2>{format || "Company / Format"}</h2>
 
-            <h1>Reports Page</h1>
-            <h2>{format || "Company Name / Format"}</h2>
-
-            {/* TABLE + CONTROLS */}
             <div className="section" style={{ marginBottom: "1rem" }}>
+                {/* Search + CSV export */}
                 <div style={{ marginBottom: "8px", display: "flex", gap: "8px" }}>
                     <input
                         type="text"
@@ -106,43 +161,73 @@ function ReportsPage() {
                     <button onClick={exportToCSV}>Export to CSV</button>
                 </div>
 
+                {/* TABLE of members' area/factor contributions (no reserved pool columns) */}
                 <table>
                     <thead>
                     <tr>
                         <th>Team Member</th>
-                        {areas.map((a) => (
-                            <th key={a.name}>{a.name}</th>
+                        {tableLabels.map((lbl) => (
+                            <th key={lbl}>{lbl}</th>
                         ))}
-                        <th>Total</th>
+                        <th>Total Equity</th>
                     </tr>
                     </thead>
                     <tbody>
                     {filteredMembers.map((m) => (
                         <tr key={m.id}>
                             <td>{m.name}</td>
-                            {areas.map((a) => (
-                                <td key={a.name}>{(m.contributions[a.name] || 0) + "%"}</td>
+                            {tableLabels.map((lbl) => (
+                                <td key={lbl}>{(m.contributions[lbl] || 0)}%</td>
                             ))}
-                            <td>{m.totalEquity + "%"}</td>
+                            <td>{m.totalEquity}%</td>
                         </tr>
                     ))}
                     </tbody>
                 </table>
+
+                {/* NEW: Reserved Equity Pools table */}
+                {reservedPools.length > 0 && (
+                    <div style={{ marginTop: "2rem" }}>
+                        <h3>Reserved Equity Pools</h3>
+                        <table>
+                            <thead>
+                            <tr>
+                                <th>Pool Name</th>
+                                <th>Weight (%)</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            {reservedPools.map((pool) => (
+                                <tr key={pool.name}>
+                                    <td>{pool.name}</td>
+                                    <td>{pool.weight}%</td>
+                                </tr>
+                            ))}
+                            </tbody>
+                        </table>
+                    </div>
+                )}
             </div>
 
-            {/* CHARTS (By Project vs. By Member) side by side */}
+            {/* CHARTS */}
             <div className="section reports-charts-container">
                 <div className="chart-container">
-                    <h3>By Project (Contribution Areas)</h3>
+                    <h3>By Project (Reserved + Areas + Factors)</h3>
                     <div style={{ height: "300px" }}>
-                        <Pie data={projectData} options={chartOptions} />
+                        <Pie
+                            data={projectData}
+                            options={{ responsive: true, maintainAspectRatio: false }}
+                        />
                     </div>
                 </div>
 
                 <div className="chart-container">
                     <h3>By Team Member (Equity)</h3>
                     <div style={{ height: "300px" }}>
-                        <Pie data={memberData} options={chartOptions} />
+                        <Pie
+                            data={memberData}
+                            options={{ responsive: true, maintainAspectRatio: false }}
+                        />
                     </div>
                 </div>
             </div>

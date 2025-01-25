@@ -1,75 +1,131 @@
+// ValidationModal.js
 import React from "react";
 import { useTeamContext } from "./TeamContext";
 import { useNavigate } from "react-router-dom";
 import "./styles.css";
 
-function ValidationModal({ onClose }) {
+function ValidationModal({ onClose, workspaceId }) {
     const navigate = useNavigate();
-    const { format, areas, members } = useTeamContext();
+    const { getWorkspaceById } = useTeamContext();
 
+    const workspace = getWorkspaceById(workspaceId);
+    if (!workspace) return null;
+
+    const { format, reservedPools = [], areas = [], intangibleFactors = [], members = [] } = workspace;
     const errors = [];
 
+    //
     // 1) Must have >= 1 member
+    //
     if (members.length === 0) {
-        errors.push("Your team must have at least 1 member (your team has 0).");
+        errors.push("Your team must have at least 1 member (currently 0).");
     }
 
-    // 2) No area can exceed 100%
+    //
+    // 2) Check sum(reservedPools + areas + intangibleFactors) == 100
+    //
+    const sumReserved = reservedPools.reduce((acc, r) => acc + r.weight, 0);
+    const sumAreas = areas.reduce((acc, a) => acc + a.weight, 0);
+    const sumFactors = intangibleFactors.reduce((acc, f) => acc + f.weight, 0);
+    const totalAllocation = sumReserved + sumAreas + sumFactors;
+
+    if (totalAllocation !== 100) {
+        errors.push(
+            `Total allocation of Reserved Pools + Areas + Intangible Factors must be 100%. Got: ${totalAllocation}%.`
+        );
+    }
+
+    //
+    // 3) No reservedPool, area, or factor can be zero
+    //
+    reservedPools.forEach((rp) => {
+        if (rp.weight === 0) {
+            errors.push(`Reserved Pool "${rp.name}" has 0%. Must be > 0%.`);
+        }
+    });
+    areas.forEach((a) => {
+        if (a.weight === 0) {
+            errors.push(`Area "${a.name}" has 0%. Must be > 0%.`);
+        }
+    });
+    intangibleFactors.forEach((f) => {
+        if (f.weight === 0) {
+            errors.push(`Intangible Factor "${f.name}" has 0%. Must be > 0%.`);
+        }
+    });
+
+    //
+    // 4) Over-allocation check in each area/factor
+    //    (Members can’t allocate from reservedPools, so no check for those.)
+    //
     areas.forEach((area) => {
-        const sum = members.reduce((acc, m) => acc + (m.contributions[area.name] || 0), 0);
-        if (sum > 100) {
+        const sumAreaContrib = members.reduce((acc, m) => acc + (m.contributions[area.name] || 0), 0);
+        if (sumAreaContrib > area.weight) {
             errors.push(
-                `Area "${area.name}" is over-allocated by ${sum - 100}%. (Total: ${sum}%)`
+                `Area "${area.name}" is over-allocated by ${
+                    sumAreaContrib - area.weight
+                }%. (Total: ${sumAreaContrib}%, Pool: ${area.weight}%)`
+            );
+        }
+    });
+    intangibleFactors.forEach((factor) => {
+        const sumFactorContrib = members.reduce((acc, m) => acc + (m.contributions[factor.name] || 0), 0);
+        if (sumFactorContrib > factor.weight) {
+            errors.push(
+                `Intangible Factor "${factor.name}" is over-allocated by ${
+                    sumFactorContrib - factor.weight
+                }%. (Total: ${sumFactorContrib}%, Pool: ${factor.weight}%)`
             );
         }
     });
 
-    // 3) No member with zero total equity
+    //
+    // 5) No member with zero total equity
+    //
     members.forEach((m) => {
-        if (m.totalEquity === 0) {
-            errors.push(`${m.name} has no equity (it must have at least one).`);
+        const totalForM = Object.values(m.contributions).reduce((a, b) => a + b, 0);
+        if (totalForM === 0) {
+            errors.push(`${m.name} has no equity allocations at all.`);
         }
     });
 
-    // 4) External investor if "Tech Startup / Seed" or Series X
-    const roundsNeedingInvestor = [
-        "Tech Startup / Seed",
-        "Tech Startup / Series A",
-        "Tech Startup / Series B",
-        "Tech Startup / Series C",
-        "Tech Startup / Series D",
-    ];
-    if (roundsNeedingInvestor.includes(format)) {
-        const fundingArea = areas.find((a) => a.name.toLowerCase() === "funding");
-        if (fundingArea) {
-            let hasExternalInvestor = false;
-            for (let m of members) {
-                let sumNonFunding = 0;
-                let fundingValue = 0;
-                for (let areaName in m.contributions) {
-                    if (areaName.toLowerCase() === "funding") {
-                        fundingValue = m.contributions[areaName];
-                    } else {
-                        sumNonFunding += m.contributions[areaName];
-                    }
-                }
-                if (fundingValue > 0 && sumNonFunding === 0) {
-                    hasExternalInvestor = true;
-                    break;
-                }
-            }
-            if (!hasExternalInvestor) {
-                errors.push(
-                    `For ${format}, you must have at least 1 external investor with >0% in "Funding" and 0% in all other areas.`
-                );
-            }
+    //
+    // 6) Total Team Equity must be (100 - sumReserved)
+    //
+    // Because if e.g. 10% is reserved, only 90% is left for team distributions.
+    // So the sum of all members' (areas+factors) should be 90, not 100.
+    //
+    const totalTeamEquity = members.reduce((acc, mem) => {
+        return acc + Object.values(mem.contributions).reduce((sub, val) => sub + val, 0);
+    }, 0);
+    const expectedTeamEquity = 100 - sumReserved;
+
+    if (Math.abs(totalTeamEquity - expectedTeamEquity) > 0.01) {
+        if (totalTeamEquity > expectedTeamEquity) {
+            errors.push(
+                `Total team equity is over by ${totalTeamEquity - expectedTeamEquity}%. (Got ${totalTeamEquity}%, Expected ${expectedTeamEquity}%)`
+            );
         } else {
             errors.push(
-                `For ${format}, you must have a "Funding" area and at least 1 external investor.`
+                `Total team equity is under by ${expectedTeamEquity - totalTeamEquity}%. (Got ${totalTeamEquity}%, Expected ${expectedTeamEquity}%)`
             );
         }
     }
 
+    //
+    // 7) Check that no member is allocating from reservedPools
+    //
+    reservedPools.forEach((rp) => {
+        members.forEach((m) => {
+            if (m.contributions[rp.name] && m.contributions[rp.name] > 0) {
+                errors.push(
+                    `Member "${m.name}" is allocating from Reserved Pool "${rp.name}", which is not allowed.`
+                );
+            }
+        });
+    });
+
+    // Final pass
     const isValid = errors.length === 0;
 
     function handleOK() {
@@ -78,7 +134,7 @@ function ValidationModal({ onClose }) {
 
     function handleViewReport() {
         onClose();
-        navigate("/reports");
+        navigate(`/reports/${workspaceId}`);
     }
 
     return (
@@ -95,7 +151,7 @@ function ValidationModal({ onClose }) {
                 </>
             ) : (
                 <>
-                    <h2>Your team is valid for {format || "the selected format"}.</h2>
+                    <h2>Your team is valid for {format || "the chosen format"}.</h2>
                     <button onClick={handleOK}>OK</button>
                     <button onClick={handleViewReport} style={{ marginLeft: "8px" }}>
                         Print/View Report

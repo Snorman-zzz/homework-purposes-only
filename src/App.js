@@ -1,6 +1,6 @@
 // App.js
 import React from "react";
-import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
 import { TeamProvider } from "./TeamContext";
 
 import WorkspacesPage from "./WorkspacesPage";
@@ -15,20 +15,27 @@ function App() {
         <TeamProvider>
             <Router>
                 <Routes>
+                    {/* 1) List of all workspaces */}
                     <Route path="/workspaces" element={<WorkspacesPage />} />
-                    <Route path="/" element={<TeamDetailsPage />} />
+
+                    {/* 2) Root path -> Could optionally go to a default workspace (#1) */}
+                    <Route path="/" element={<Navigate to="/team-details/1" />} />
+
+                    {/* 3) Billing & Upgrade (no workspace ID needed) */}
                     <Route path="/billing" element={<BillingPage />} />
                     <Route path="/upgrade" element={<UpgradePage />} />
 
-                    {/* Key route: We pass :workspaceId so we can open distinct workspaces */}
+                    {/* 4) Team Details per workspace: /team-details/:workspaceId */}
                     <Route path="/team-details/:workspaceId" element={<TeamDetailsPage />} />
-                    <Route path="/reports" element={<ReportsPage />} />
 
-                    {/* Editing a member => /edit-member/:memberId => goes to NewMemberPage in "edit mode" */}
-                    <Route path="/edit-member/:memberId" element={<NewMemberPage />} />
+                    {/* 5) Reports per workspace: /reports/:workspaceId */}
+                    <Route path="/reports/:workspaceId" element={<ReportsPage />} />
 
-                    {/* Adding a new member => /new-member => also NewMemberPage in "add" mode */}
-                    <Route path="/new-member" element={<NewMemberPage />} />
+                    {/* 6) Edit a member => /edit-member/:workspaceId/:memberId */}
+                    <Route path="/edit-member/:workspaceId/:memberId" element={<NewMemberPage />} />
+
+                    {/* 7) Add a new member => /new-member/:workspaceId */}
+                    <Route path="/new-member/:workspaceId" element={<NewMemberPage />} />
                 </Routes>
             </Router>
         </TeamProvider>
