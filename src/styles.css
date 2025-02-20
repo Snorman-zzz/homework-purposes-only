@@ -1,39 +1,15 @@
-/* styles.css */
-
-/*
-  1. GLOBAL RESETS & BASIC STYLES
-*/
-html, body {
+/* Global resets */
+body, html {
     margin: 0;
     padding: 0;
-    font-family: 'Open Sans', sans-serif; /* or a similar modern font */
-    background-color: #FFFFFF; /* Light background */
-    color: #333333;            /* Dark text */
-    min-height: 100vh;         /* ensure full screen coverage */
+    font-family: 'Open Sans', sans-serif;
+    background-color: #FFFFFF;
+    color: #333333;
+    min-height: 100vh;
 }
 
-/* Buttons */
-button {
-    background-color: #F26E21; /* Orange for CTA */
-    color: #FFFFFF;
-    border: none;
-    border-radius: 6px;
-    padding: 8px 14px;
-    cursor: pointer;
-    font-weight: 600;
-    transition: background-color 0.2s ease;
-}
-
-button:hover {
-    background-color: #d85f1d; /* Darker orange on hover */
-}
-
-/*
-  2. LAYOUT WRAPPERS & SECTIONS
-*/
-/* Let the layout fill larger screens using 95% of viewport width (vw) */
 .wrapper {
-    width: 95vw;
+    width: 95%;
     margin: 0 auto;
     padding: 24px;
 }
@@ -46,174 +22,172 @@ button:hover {
     margin-bottom: 24px;
 }
 
-/*
-  3. TOP BAR (NAVY BACKGROUND)
-*/
+/* Top Bar */
 .top-bar {
-    background-color: #14314E;
+    background-color: #fff;
+    border-bottom: 1px solid #ccc;
     display: flex;
-    align-items: center;
+    gap: 8px;
     padding: 8px 16px;
     margin-bottom: 24px;
-    width: 100%;
+}
+.topbar-btn {
+    background: none;
+    border: none;
+    padding: 8px 12px;
+    cursor: pointer;
+    font-weight: 600;
+    color: #101011;
+    border-radius: 4px;
+}
+.topbar-btn.active {
+    background-color: #0F66CC;
+    color: #fff;
 }
 
-.top-bar button {
-    background-color: #103048;
-    margin-right: 8px;
+/* Left Nav for questionnaire */
+.leftnav {
+    width: 220px;
+    border-right: 1px solid #ECECEC;
+    padding-right: 16px;
+    margin-right: 16px;
 }
-.top-bar button:hover {
-    background-color: #0c2535;
-}
-
-/*
-  4. HEADINGS
-*/
-h1, h2, h3, h4, h5 {
-    margin-top: 0;
-    color: #0A99A8; /* Teal heading color */
+.leftnav div {
+    margin-bottom: 8px;
 }
 
-/*
-  5. VALIDATION MODAL
-*/
-.validation-modal {
-    position: fixed;
-    top: 20%;
-    left: 30%;
-    width: 40%;
-    background-color: #FFFFFF;
-    border: 2px solid #ECECEC;
-    padding: 1rem;
-    z-index: 999;
+/* Question area */
+.question-area {
+    flex: 1;
+}
+.question-content {
+    background-color: #FAFAFA;
+    border: 1px solid #ECECEC;
     border-radius: 8px;
+    padding: 16px;
+    min-height: 200px;
+    margin-bottom: 16px;
+}
+.company-name-container {
+    margin-bottom: 8px;
 }
 
-.validation-modal h2 {
-    margin-top: 0;
-    color: #0A99A8;
+/* Buttons at bottom of question panel */
+.question-nav-buttons {
+    display: flex;
+    gap: 8px;
+}
+.question-nav-buttons button {
+    background-color: #0F66CC;
+    color: #fff;
+    border: none;
+    padding: 8px 16px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Home/Workspace page */
+.workspace-btn {
+    background-color: #333;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.add-workspace-btn {
+    background-color: #F26E21;
+    color: #fff;
+    border: none;
+    padding: 8px 12px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+/* Modals */
+.modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0,0,0,0.3);
+    z-index: 9999;
+    display: flex;
+    justify-content: center;
+    align-items: center;
 }
 
 /*
-  6. TABLE STYLING
+   Updated Welcome Modal:
+   - Fixed width/height so it remains the same size.
+   - A scrollable area for long content.
 */
-table {
+.welcome-modal {
+    background-color: #fff;
+    width: 600px;           /* fixed width */
+    max-width: 90%;         /* responsive on small screens */
+    height: 400px;          /* fixed height */
+    border-radius: 8px;
+    position: relative;
+    padding: 16px;
+    box-sizing: border-box;
+    overflow: hidden;       /* hide overflow outside modal */
+}
+
+/* Close button for modal */
+.modal-close-btn {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+}
+
+/*
+   The scrollable content inside the modal.
+   max-height is set so that the header and footer remain visible.
+*/
+.welcome-modal-content {
+    margin-top: 36px;
+    max-height: 270px;
+    overflow-y: auto;
+}
+
+/* Footer container for the modal; centers the button */
+.welcome-modal-footer {
+    display: flex;
+    justify-content: center;
+    margin-top: 2px;
+}
+
+/* "Try the Calculator" button styling */
+.try-calculator-btn {
+    background-color: #000;
+    color: #fff;
+    border: none;
+    padding: 12px 20px;
+    border-radius: 4px;
+    cursor: pointer;
+}
+.try-calculator-btn:hover {
+    background-color: #333;
+}
+
+/* Table for the report */
+.equity-summary {
     width: 100%;
     border-collapse: collapse;
     margin-top: 16px;
-    background-color: #FFFFFF;
 }
-
-table th,
-table td {
+.equity-summary th, .equity-summary td {
     border: 1px solid #E3E3E3;
     padding: 8px;
     text-align: left;
-    color: #333333;
 }
-
-table thead {
+.equity-summary thead {
     background-color: #F2F2F2;
-}
-
-table thead th {
     color: #333333;
 }
-
-/*
-  7. INPUTS & RANGES
-*/
-input[type="text"],
-select {
-    padding: 6px;
-    border: 1px solid #CCCCCC;
-    border-radius: 4px;
-    background-color: #FFFFFF;
-    color: #333333;
-}
-
-input[type="range"] {
-    vertical-align: middle;
-    margin-left: 6px;
-}
-
-/*
-  8. MEMBER BOX (FOR EACH TEAM MEMBER)
-*/
-.member-box {
-    border: 1px solid #E3E3E3;
-    background-color: #FFFFFF;
-    border-radius: 6px;
-    padding: 16px;
-    margin-bottom: 16px;
-}
-
-.member-box img {
-    border-radius: 50%;
-    max-width: 80px;
-    height: auto;
-}
-
-/*
-  9. CHART ROW & CHART CONTAINER
-*/
-
-/* A row container for charts on the Reports page */
-.chart-row {
-    display: flex;
-    flex-wrap: wrap; /* allow wrap on smaller screens */
-    gap: 2rem;       /* space between chart containers */
-}
-
-.chart-container {
-    flex: 1;               /* let it expand in the row */
-    min-width: 300px;      /* ensure it doesn't get too narrow */
-    max-width: 600px;      /* optional upper bound, remove if you want infinite expansion */
-    margin: 16px 0;
-    overflow: visible;     /* don't clip the chart if it overflows */
-}
-
-/*
-  Make the canvas inside fill container, ensuring chart doesn't clip
-*/
-.chart-container canvas {
-    width: 100% !important;
-    height: auto !important;
-    max-width: 100%;
-    display: block;
-}
-
-/*
-  10. RESPONSIVE MEDIA QUERIES
-*/
-
-/*
-  Stack top bar buttons vertically on narrow screens
-*/
-@media (max-width: 576px) {
-    .top-bar {
-        flex-direction: column;
-        align-items: flex-start;
-    }
-    .top-bar button {
-        margin-bottom: 8px;
-        margin-right: 0;
-    }
-}
-
-/*
-  Make validation modal 90% width on small screens
-*/
-@media (max-width: 576px) {
-    .validation-modal {
-        top: 10%;
-        left: 5%;
-        width: 90%;
-    }
-}
-
-/* Utility spacing classes */
-.mt-1 { margin-top: 8px; }
-.mt-2 { margin-top: 16px; }
-.mb-1 { margin-bottom: 8px; }
-.mb-2 { margin-bottom: 16px; }

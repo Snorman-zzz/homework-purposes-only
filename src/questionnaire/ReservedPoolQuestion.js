@@ -1,40 +1,43 @@
 // src/questionnaire/ReservedPoolQuestion.js
 import React, { useState } from "react";
 import { useTeamContext } from "../TeamContext";
-import SliderWithButtons from "../ui/SliderWithButtons"; // or wherever your slider is
+import SliderWithButtons from "../ui/SliderWithButtons";
 
 const suggestedAdditionalShareholders = [
-    { name: "Employee Stock Pool", tooltip: "..." },
-    { name: "Independent Directors", tooltip: "..." },
-    { name: "Third Party Advisors", tooltip: "..." },
-    { name: "Potential Investors", tooltip: "..." },
-    { name: "Others", tooltip: "..." },
+    { name: "Employee Stock Pool" },
+    { name: "Independent Directors" },
+    { name: "Third Party Advisors" },
+    { name: "Potential Investors" },
+    { name: "Others" },
 ];
 
-function ReservedPoolQuestion() {
-    const { part1Answers, setPart1Answers } = useTeamContext();
-    const pools = part1Answers.reservedPools || [];
+function ReservedPoolQuestion({ workspace }) {
+    const { updateWorkspaceData } = useTeamContext();
+    const pools = workspace.part1Answers.reservedPools || [];
     const [newPoolName, setNewPoolName] = useState("");
 
     function addPool(name) {
-        // if it already exists, skip
-        if (pools.find(x => x.name === name)) return;
-        setPart1Answers(prev => ({
-            ...prev,
-            reservedPools: [...prev.reservedPools, { name, weight: 0 }]
-        }));
+        if (pools.find((x) => x.name === name)) return;
+        const newItem = { name, weight: 0 };
+        const newP1 = {
+            ...workspace.part1Answers,
+            reservedPools: [...pools, newItem],
+        };
+        updateWorkspaceData(workspace.id, { ...workspace, part1Answers: newP1 });
     }
 
     function removePool(idx) {
         const updated = [...pools];
         updated.splice(idx, 1);
-        setPart1Answers(prev => ({ ...prev, reservedPools: updated }));
+        const newP1 = { ...workspace.part1Answers, reservedPools: updated };
+        updateWorkspaceData(workspace.id, { ...workspace, part1Answers: newP1 });
     }
 
     function updateSlider(idx, val) {
         const updated = [...pools];
         updated[idx].weight = val;
-        setPart1Answers(prev => ({ ...prev, reservedPools: updated }));
+        const newP1 = { ...workspace.part1Answers, reservedPools: updated };
+        updateWorkspaceData(workspace.id, { ...workspace, part1Answers: newP1 });
     }
 
     return (
@@ -43,8 +46,8 @@ function ReservedPoolQuestion() {
                 {suggestedAdditionalShareholders.map((s) => (
                     <button
                         key={s.name}
-                        onClick={() => addPool(s.name)}
                         style={{ marginRight: "6px", backgroundColor: "#14B8A6", color: "#fff" }}
+                        onClick={() => addPool(s.name)}
                     >
                         {s.name}
                     </button>
@@ -58,18 +61,24 @@ function ReservedPoolQuestion() {
                     onChange={(e) => setNewPoolName(e.target.value)}
                     style={{ marginRight: "8px" }}
                 />
-                <button onClick={() => {
-                    if(newPoolName.trim()) addPool(newPoolName.trim());
-                    setNewPoolName("");
-                }}>
+                <button
+                    onClick={() => {
+                        if (newPoolName.trim()) {
+                            addPool(newPoolName.trim());
+                            setNewPoolName("");
+                        }
+                    }}
+                >
                     + Add
                 </button>
             </div>
-
             {pools.length === 0 && <p>No equity pools added yet.</p>}
             {pools.map((pool, idx) => (
-                <div key={idx} style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}>
-                    <div style={{ width: "200px", fontWeight: "bold" }}>{pool.name}</div>
+                <div
+                    key={idx}
+                    style={{ display: "flex", alignItems: "center", marginBottom: "8px" }}
+                >
+                    <strong style={{ width: "200px" }}>{pool.name}</strong>
                     <SliderWithButtons
                         value={pool.weight}
                         min={0}
@@ -79,7 +88,13 @@ function ReservedPoolQuestion() {
                     />
                     <button
                         onClick={() => removePool(idx)}
-                        style={{ marginLeft: "8px", background: "none", border: "none", color: "#ef4444", fontSize: "20px" }}
+                        style={{
+                            marginLeft: "8px",
+                            background: "none",
+                            border: "none",
+                            color: "#ef4444",
+                            fontSize: "20px",
+                        }}
                     >
                         &times;
                     </button>
