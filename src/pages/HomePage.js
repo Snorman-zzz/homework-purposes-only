@@ -155,9 +155,27 @@ function HomePage() {
                         );
                     })}
 
-                <button onClick={handleAdd} style={{ marginTop: "16px" }}>
+                <button
+                    onClick={handleAdd}
+                    style={{
+                        marginTop: "16px",
+                        padding: "8px 16px",
+                        backgroundColor: "#0F66CC",
+                        color: "#fff",
+                        border: "none",
+                        borderRadius: "4px",
+                        cursor: "pointer",
+                        fontWeight: "600",
+                        fontSize: "14px",
+                        transition: "background-color 0.2s",
+                        ':hover': {
+                            backgroundColor: "#0E5EB5"
+                        }
+                    }}
+                >
                     + Add Workspace
                 </button>
+
             </div>
         </div>
     );

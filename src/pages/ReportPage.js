@@ -1,8 +1,9 @@
 // src/pages/ReportPage.js
-import React from "react";
+import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTeamContext } from "../TeamContext";
 import TopBar from "../ui/TopBar";
+import ReactMarkdown from 'react-markdown';
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import "../styles.css";
@@ -15,6 +16,9 @@ ChartJS.register(ArcElement, Tooltip, Legend);
 function ReportPage() {
     const navigate = useNavigate();
     const { activeWorkspaceId, getWorkspaceById, calculateFinalEquity } = useTeamContext();
+    const [aiResponse, setAiResponse] = useState("");
+    const [isLoading, setIsLoading] = useState(false);
+    const [error, setError] = useState("");
 
     // If no workspace is selected at all
     if (!activeWorkspaceId) {
@@ -141,10 +145,147 @@ function ReportPage() {
     // Use the company name if present, else fallback to workspace name
     const companyName = ws.part1Answers.companyName || ws.name;
 
+    async function getEquityAnswer(prompt) {
+        const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
+        try {
+            const response = await fetch('https://api.openai.com/v1/chat/completions', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'Authorization': `Bearer ${apiKey}`
+                },
+                body: JSON.stringify({
+                    model: "gpt-4o-mini",
+                    messages: [{ role: "user", content: prompt }]
+                })
+            });
+
+            const data = await response.json();
+            if (!response.ok) throw new Error(data.error?.message || 'API request failed');
+            return data.choices[0].message.content;
+        } catch (err) {
+            console.error('API Error:', err);
+            throw err;
+        }
+    }
+
+    const handleGenerateAIReport = async () => {
+        setIsLoading(true);
+        setError('');
+        setAiResponse('');
+
+        try {
+            // Build data strings from context
+            const contributionBreakdown = reservedPools
+                .map(rp => `${rp.name}: ${rp.weight.toFixed(2)}%`)
+                .join(", ");
+
+            const teamBreakdown = founderEntries
+                .map(([fn, eq]) => `${fn}: ${eq.toFixed(2)}%`)
+                .join(", ");
+
+            // Construct the detailed prompt
+            const prompt = `Using the following equity breakdown data, generate an AI report that provides a detailed explanation for each founder's equity position. Apply these rules for each founder based on their total equity percentage:
+
+- If the total equity is between 85% and 100%:
+  "Oh wow you are really taking the lead on this venture! While you obviously have taken on a significant amount of the work within the company, you may want to consider delegation to your cofounders in order to be able to execute on your idea. Additionally, some cofounders have stated that they do not think that their partner would have 'stuck around' if they didn't have a substantial amount of equity within the company. [...]"
+
+- If the total equity is between 60% and 85%:
+  "Having 60–85% of the company typically places you in a strong majority position. You’ll likely set the overarching vision and hold significant sway over critical decisions. [...]"
+
+- If the total equity is between 40% and 60%:
+  "If your equity stake sits in the 40–60% range, you likely play a pivotal role in the company while sharing substantial ownership with at least one other cofounder. [...]"
+
+- If the total equity is between 20% and 40%:
+  "If you hold 20–40% equity, you’re likely a core member of the founding or early team, yet you’re not the primary decision-maker. [...]"
+
+- If the total equity is between 0% and 20%:
+  "If you hold somewhere between 0–20% of the company, you’re likely involved in a specific, specialized capacity [...]"
+
+- If the equity split is exactly 50/50%:
+  "A 50/50 split is common among two-person founding teams, symbolizing complete equality in ownership, decision-making, and responsibility [...]"
+
+Equity Breakdown by Contribution Areas: ${contributionBreakdown}
+
+Equity Breakdown by Team Member: ${teamBreakdown}
+
+Generate the report accordingly for each founder. Focus on explaining each founder's position based on their percentage and provide actionable recommendations.`;
+
+            const answer = await getEquityAnswer(prompt);
+            setAiResponse(answer);
+        } catch (err) {
+            let errorMessage = err.message;
+            if (errorMessage.includes('Rate limit')) errorMessage = "API quota exceeded - check your billing";
+            if (errorMessage.includes('Incorrect API')) errorMessage = "Invalid API key - check configuration";
+            setError(errorMessage);
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
     return (
         <div className="wrapper">
             <TopBar currentTab="report" />
             <h1>Equity Report for {companyName}</h1>
+
+            {/* AI Reporting Section */}
+            <div className="section" style={{ marginTop: "32px" }}>
+                <h2>AI Equity Analysis</h2>
+
+                <div style={{ marginBottom: "16px" }}>
+
+                </div>
+
+                <button
+                    onClick={handleGenerateAIReport}
+                    disabled={isLoading}
+                    style={{
+                        padding: "12px 24px",
+                        backgroundColor: isLoading ? "#9CA3AF" : "#10B981",
+                        color: "white",
+                        border: "none",
+                        borderRadius: "6px",
+                        cursor: "pointer",
+                        fontSize: "16px",
+                        transition: "background-color 0.2s"
+                    }}
+                >
+                    {isLoading ? "Analyzing..." : "Generate AI Report"}
+                </button>
+
+                {error && (
+                    <div style={{
+                        marginTop: "16px",
+                        padding: "12px",
+                        backgroundColor: "#FEE2E2",
+                        color: "#B91C1C",
+                        borderRadius: "4px"
+                    }}>
+                        Error: {error}
+                    </div>
+                )}
+
+                {aiResponse && (
+                    <div className="report-md" style={{
+                        marginTop: "24px",
+                        padding: "20px",
+                        backgroundColor: "#F3F4F6",
+                        borderRadius: "8px",
+                    }}>
+                        <h3>AI Analysis Result</h3>
+                        <div style={{
+                            marginTop: "12px",
+                            lineHeight: 1.6,
+                            fontFamily: "'Inter', sans-serif",
+                            color: "#1F2937"
+                        }}>
+                            <ReactMarkdown>{aiResponse}</ReactMarkdown>
+                        </div>
+                    </div>
+                )}
+
+            </div>
+
 
             {/* Founders Table */}
             <div className="section">

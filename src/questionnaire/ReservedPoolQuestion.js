@@ -2,13 +2,14 @@
 import React, { useState } from "react";
 import { useTeamContext } from "../TeamContext";
 import SliderWithButtons from "../ui/SliderWithButtons";
+import { Tooltip } from "react-tooltip"; // Import named export
 
 const suggestedAdditionalShareholders = [
-    { name: "Employee Stock Pool" },
-    { name: "Independent Directors" },
-    { name: "Third Party Advisors" },
-    { name: "Potential Investors" },
-    { name: "Others" },
+    { name: "Employee Stock Pool", tooltip: "Equity allocated for employees/future hires" },
+    { name: "Independent Directors", tooltip: "Equity for board directors" },
+    { name: "Third Party Advisors", tooltip: "Specialists or advisors with equity" },
+    { name: "Potential Investors", tooltip: "Equity set aside for new investment" },
+    { name: "Others", tooltip: "Misc or custom placeholders" },
 ];
 
 function ReservedPoolQuestion({ workspace }) {
@@ -46,7 +47,13 @@ function ReservedPoolQuestion({ workspace }) {
                 {suggestedAdditionalShareholders.map((s) => (
                     <button
                         key={s.name}
-                        style={{ marginRight: "6px", backgroundColor: "#14B8A6", color: "#fff" }}
+                        data-tooltip-id="reserved-tooltip"            // Link to tooltip container
+                        data-tooltip-content={s.tooltip}                // Tooltip text from object
+                        style={{
+                            marginRight: "6px",
+                            backgroundColor: "#14B8A6",
+                            color: "#fff",
+                        }}
                         onClick={() => addPool(s.name)}
                     >
                         {s.name}
@@ -100,6 +107,8 @@ function ReservedPoolQuestion({ workspace }) {
                     </button>
                 </div>
             ))}
+            {/* Render the tooltip container */}
+            <Tooltip id="reserved-tooltip" place="top" type="dark" effect="solid" />
         </div>
     );
 }

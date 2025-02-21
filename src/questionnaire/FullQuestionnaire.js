@@ -313,10 +313,10 @@ function FullQuestionnaire() {
                         questionTitle="Equity Allocation for Core Factors"
                         disclaimer="*Percentages represent relative contributions..."
                         suggestedFactors={[
-                            { name: "Opportunity Costs" },
-                            { name: "Personal Risk" },
-                            { name: "IP/Patent" },
-                            { name: "Liability Assumption" },
+                            { name: "Opportunity Costs", tooltip: "Salary forgone, or similar" },
+                            { name: "Personal Risk", tooltip: "Savings, mortgage, loan" },
+                            { name: "IP/Patent", tooltip: "Value from IP contributed" },
+                            { name: "Liability Assumption", tooltip: "Collateral, personal guarantees" },
                         ]}
                         answerKey="coreFactors"
                     />
@@ -329,10 +329,16 @@ function FullQuestionnaire() {
                         questionTitle="Pre-Formation Contributions"
                         disclaimer="You can skip if none apply."
                         suggestedFactors={[
-                            { name: "Idea" },
-                            { name: "Research/Market Data" },
-                            { name: "MVP" },
-                            { name: "Signed Contracts" },
+                            { name: "Idea", tooltip: "Who contributed the core idea?" },
+                            { name: "Research/Market Data", tooltip: "Time spent on early research" },
+                            { name: "MVP", tooltip: "Did someone build the MVP alone?" },
+                            { name: "Signed Contracts", tooltip: "Deals prior to formation" },
+                            { name: "Prototype", tooltip: "Significant dev or prototypes" },
+                            { name: "Social Presence", tooltip: "Early marketing presence" },
+                            { name: "LOI/Pre-approval", tooltip: "Letters of intent or early approvals" },
+                            { name: "Business Plan/Modelling", tooltip: "Detailed business plan" },
+                            { name: "Brand Establishment", tooltip: "Logos, identity, etc." },
+                            { name: "Investment approvals", tooltip: "Securing term sheets" },
                         ]}
                         answerKey="preFormation"
                     />
@@ -345,9 +351,18 @@ function FullQuestionnaire() {
                         questionTitle="Role & Responsibility Consideration"
                         disclaimer="Skip if none apply."
                         suggestedFactors={[
-                            { name: "Rare Expertise" },
-                            { name: "Key Milestones Impact" },
-                            { name: "Strategic Role" },
+                            { name: "Rare Expertise", tooltip: "Hard to replace specialized skill" },
+                            { name: "Key Milestones Impact", tooltip: "Key to product launch, fundraising, revenue targets" },
+                            { name: "Strategic Role", tooltip: "Key to company’s competitive advantage, reputation, or compliance" },
+                            { name: "Revenue/Partnership Impact", tooltip: "Influences customer acquisition, partnerships, sales" },
+                            { name: "Regulatory/Compliance Onus", tooltip: "Personal liability for compliance failures or legal risks" },
+                            { name: "Pre-Revenue Salary Need", tooltip: "Needs a salary before the company generates revenue" },
+                            { name: "Business Continuity Risk", tooltip: "Business would not continue without this founder" },
+                            { name: "Service Impact", tooltip: "Founder’s departure would severely disrupt product/service delivery" },
+                            { name: "Key Component Risk", tooltip: "Key component of business lost if founder leaves" },
+                            { name: "Customer Acquisition Difficulty", tooltip: "Customer acquisition would be difficult without this founder" },
+                            { name: "Time to Market Delay", tooltip: "Negative impact on product launch timeline" },
+                            { name: "Founder Reliant Product/Service", tooltip: "The main product or service cannot function without this founder" },
                         ]}
                         answerKey="roleResponsibility"
                     />
@@ -360,9 +375,34 @@ function FullQuestionnaire() {
                         questionTitle="Relevant Experience & Networks"
                         disclaimer="Skip if none apply."
                         suggestedFactors={[
-                            { name: "Influencer Status" },
-                            { name: "Speaker/Writer" },
-                            { name: "Research Grants" },
+                            { name: "Influencer Status", tooltip: "Large personal brand or media presence" },
+                            { name: "Speaker/Writer", tooltip: "Public recognition and thought leadership" },
+                            { name: "Research Grants", tooltip: "Experience with securing grants or research funding" },
+                            { name: "Trade Secrets", tooltip: "Proprietary processes or confidential knowledge" },
+                            { name: "Successful Exits", tooltip: "Founder has prior successful business exits" },
+                            { name: "Social Capital", tooltip: "Strong industry connections and network" },
+                            { name: "Product Knowledge", tooltip: "Deep expertise in product development" },
+                            { name: "Industry Knowledge", tooltip: "Extensive understanding of industry trends" },
+                            { name: "Supplier Knowledge", tooltip: "Deep and provable expertise in supplier management" },
+                            { name: "Manufacturing Knowledge", tooltip: "Deep and provable experience in manufacturing" },
+                            { name: "Distribution Knowledge", tooltip: "Deep and provable knowledge of distribution systems" },
+                            { name: "Operations Knowledge", tooltip: "Expertise in optimizing business operations" },
+                            { name: "Marketing Knowledge", tooltip: "Deep understanding of branding and marketing" },
+                            { name: "Financial Knowledge", tooltip: "Strong background in financial planning" },
+                            { name: "Competitor Knowledge", tooltip: "Awareness of market competition" },
+                            { name: "Local Knowledge", tooltip: "Deep understanding of regional markets" },
+                            { name: "Global Expansion", tooltip: "Proven experience scaling businesses globally" },
+                            { name: "Scaling Knowledge", tooltip: "Experience in business growth strategies" },
+                            { name: "Regulatory Knowledge", tooltip: "Expertise in compliance and industry regulations" },
+                            { name: "Lobbying Knowledge", tooltip: "Understanding of policy influence and lobbying" },
+                            { name: "Legal Knowledge", tooltip: "Expertise in business law and contracts" },
+                            { name: "Fundraising Network", tooltip: "Connections to investors and funding sources" },
+                            { name: "Regulatory Network", tooltip: "Connections with regulators and policymakers" },
+                            { name: "Supplier Network", tooltip: "Strong relationships with key suppliers" },
+                            { name: "Manufacturing Network", tooltip: "Established partnerships in manufacturing" },
+                            { name: "Recruiting Network", tooltip: "Access to top talent and hiring resources" },
+                            { name: "Distribution Network", tooltip: "Access to key distribution channels" },
+                            { name: "Client Network", tooltip: "Established customer and client base" },
                         ]}
                         answerKey="experienceNetworks"
                     />
