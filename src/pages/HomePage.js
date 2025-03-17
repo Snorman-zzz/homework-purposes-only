@@ -16,6 +16,7 @@ function HomePage() {
 
     // Store the last deleted workspace in local state to allow "undo."
     const [deletedEntry, setDeletedEntry] = useState(null);
+    const [showHelpPanel, setShowHelpPanel] = useState(false);
 
     function handleAdd() {
         const name = prompt("Workspace name?");
@@ -66,13 +67,52 @@ function HomePage() {
 
     return (
         <div className="wrapper">
-            <TopBar currentTab="home" />
+            <TopBar currentTab="home"/>
+            <div style={{
+                position: "fixed",
+                bottom: "20px",
+                right: "20px",
+                zIndex: 9999
+            }}>
+                {showHelpPanel && (
+                    <div style={{
+                        backgroundColor: "#FAFAFA",
+                        border: "1px solid #ccc",
+                        padding: "16px",
+                        borderRadius: "6px",
+                        width: "280px",
+                        color: "#28435a"
+                    }}>
+                        <p style={{fontWeight: 600, marginBottom: "12px"}}>
+                            Workspace Help
+                        </p>
+                        <p>Toggle between workspaces or create new ones.</p>
+                        <p>Click founder percentages to jump to their breakdown.</p>
+                    </div>
+                )}
+                <button
+                    onClick={() => setShowHelpPanel(!showHelpPanel)}
+                    style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        backgroundColor: "#28435a", /* teal for help/info */
+                        color: "#fff",
+                        border: "none",
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        fontSize: "18px",
+                    }}
+                >
+                    ?
+                </button>
+            </div>
 
             {deletedEntry && (
-                <div style={{ marginBottom: "8px" }}>
+                <div style={{marginBottom: "8px"}}>
                     <button
                         onClick={handleUndoDelete}
-                        style={{ backgroundColor: "#d1fae5", color: "#065f46" }}
+                        style={{backgroundColor: "#d1fae5", color: "#065f46"}}
                     >
                         ↩️ Undo Delete
                     </button>
@@ -113,22 +153,22 @@ function HomePage() {
                                 }}
                             >
                                 <div>
-                                    <div style={{ fontWeight: "bold", marginBottom: "4px" }}>
+                                    <div style={{fontWeight: "bold", marginBottom: "4px"}}>
                                         {displayName || "Untitled"}
                                     </div>
-                                    <div style={{ fontSize: "0.9em", color: "#555" }}>
+                                    <div style={{fontSize: "0.9em", color: "#555"}}>
                                         {founderNames.length > 0
                                             ? founderNames.join(", ")
                                             : "No team members yet"}
                                     </div>
                                 </div>
 
-                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                <div style={{display: "flex", alignItems: "center", gap: "8px"}}>
                                     {/* Pencil icon => open the workspace */}
                                     <button
                                         onClick={() => handleOpen(ws.id)}
                                         title="Open"
-                                        style={{ background: "none", border: "none", cursor: "pointer" }}
+                                        style={{background: "none", border: "none", cursor: "pointer"}}
                                     >
                                         ✏️
                                     </button>
@@ -137,7 +177,7 @@ function HomePage() {
                                     <button
                                         onClick={() => handleDuplicate(ws)}
                                         title="Duplicate"
-                                        style={{ background: "none", border: "none", cursor: "pointer" }}
+                                        style={{background: "none", border: "none", cursor: "pointer"}}
                                     >
                                         📄
                                     </button>
@@ -146,7 +186,7 @@ function HomePage() {
                                     <button
                                         onClick={() => handleDelete(ws)}
                                         title="Delete"
-                                        style={{ background: "none", border: "none", cursor: "pointer" }}
+                                        style={{background: "none", border: "none", cursor: "pointer"}}
                                     >
                                         🗑️
                                     </button>

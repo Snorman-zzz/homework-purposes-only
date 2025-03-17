@@ -19,6 +19,7 @@ function ReportPage() {
     const [aiResponse, setAiResponse] = useState("");
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState("");
+    const [showHelpPanel, setShowHelpPanel] = useState(false);
 
     // If no workspace is selected at all
     if (!activeWorkspaceId) {
@@ -225,14 +226,111 @@ Generate the report accordingly for each founder. Focus on explaining each found
 
     return (
         <div className="wrapper">
-            <TopBar currentTab="report" />
+            <TopBar currentTab="report"/>
+            <div
+                style={{
+                    position: "fixed",
+                    bottom: "20px",
+                    right: "20px",
+                    zIndex: 9999,
+                }}
+                id="help-panel"
+            >
+                {showHelpPanel && (
+                    <div
+                        style={{
+                            backgroundColor: "#FAFAFA",
+                            border: "1px solid #ccc",
+                            padding: "16px",
+                            borderRadius: "6px",
+                            marginBottom: "8px",
+                            width: "280px",
+                            fontSize: "14px",
+                            color: "#28435a"
+                        }}
+                    >
+                        <p style={{marginBottom: "12px", fontWeight: "600"}}>
+                            Founder Insight Articles:
+                        </p>
+                        <ul style={{listStyle: "none", padding: 0, margin: 0}}>
+                            <li style={{marginBottom: "8px"}}>
+                                <a
+                                    href="https://thecofoundershub.com/"
+                                    target="_blank"
+                                    rel="noreferrer"
+                                    style={{color: "#0F66CC", textDecoration: "underline"}}
+                                >
+                                    📌 Will you VEST? 4 years with 1 year cliff
+                                </a>
+                            </li>
+                            <li style={{marginBottom: "8px"}}>
+                                <a href="https://thecofoundershub.com/"
+                                   target="_blank"
+                                   rel="noreferrer"
+                                   style={{color: "#0F66CC", textDecoration: "underline"}}>
+                                    💡 Is investment a loan to be paid back from Revenue?
+                                </a>
+                            </li>
+                            <li style={{marginBottom: "8px"}}>
+                                <a href="https://thecofoundershub.com/"
+                                   target="_blank"
+                                   rel="noreferrer"
+                                   style={{color: "#0F66CC", textDecoration: "underline"}}>
+                                    🏢 Asset ownership: Company vs Personal
+                                </a>
+                            </li>
+                            <li style={{marginBottom: "8px"}}>
+                                <a href="https://thecofoundershub.com/"
+                                   target="_blank"
+                                   rel="noreferrer"
+                                   style={{color: "#0F66CC", textDecoration: "underline"}}>
+                                    ⚖️ Liability sunset clauses & equity redistribution
+                                </a>
+                            </li>
+                            <li style={{marginBottom: "8px"}}>
+                                <a href="https://thecofoundershub.com/"
+                                   target="_blank"
+                                   rel="noreferrer"
+                                   style={{color: "#0F66CC", textDecoration: "underline"}}>
+                                    📋 Founder expense responsibilities
+                                </a>
+                            </li>
+                            <li>
+                                <a href="https://thecofoundershub.com/"
+                                   target="_blank"
+                                   rel="noreferrer"
+                                   style={{color: "#0F66CC", textDecoration: "underline"}}>
+                                    💭 Final thoughts on equity distribution
+                                </a>
+                            </li>
+                        </ul>
+                    </div>
+                )}
+                <button
+                    onClick={() => setShowHelpPanel(!showHelpPanel)}
+                    style={{
+                        width: "40px",
+                        height: "40px",
+                        borderRadius: "50%",
+                        backgroundColor: "#28435a",
+                        color: "#fff",
+                        border: "none",
+                        cursor: "pointer",
+                        fontWeight: "bold",
+                        fontSize: "18px",
+                    }}
+                    title="View Founder Insights"
+                >
+                    ?
+                </button>
+            </div>
             <h1>Equity Report for {companyName}</h1>
 
             {/* AI Reporting Section */}
-            <div className="section" style={{ marginTop: "32px" }}>
+            <div className="section" style={{marginTop: "32px"}}>
                 <h2>AI Equity Analysis</h2>
 
-                <div style={{ marginBottom: "16px" }}>
+                <div style={{marginBottom: "16px"}}>
 
                 </div>
 
@@ -332,10 +430,10 @@ Generate the report accordingly for each founder. Focus on explaining each found
             )}
 
             {/* Pie Chart */}
-            <div className="section" style={{ marginTop: "24px" }}>
+            <div className="section" style={{marginTop: "24px"}}>
                 <h2>Combined Pie: Founders + Pools</h2>
-                <div style={{ height: "300px", maxWidth: "600px" }}>
-                    <Pie data={chartData} options={{ maintainAspectRatio: false }} />
+                <div style={{height: "300px", maxWidth: "600px"}}>
+                    <Pie data={chartData} options={{maintainAspectRatio: false}}/>
                 </div>
             </div>
         </div>
