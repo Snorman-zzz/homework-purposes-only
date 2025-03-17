@@ -1,70 +1,94 @@
-# Getting Started with Create React App
+# Equity Calculator & Analysis Tool
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A React-based application for calculating founder equity distribution and generating AI-powered analysis reports.
 
-## Available Scripts
+## Key Features
 
-In the project directory, you can run:
+🎯 **Multi-Step Questionnaire**  
+- Context-aware forms with conditional logic
+- Local storage persistence for continuous work
+- Input validation and error handling
 
-### `npm start`
+📊 **Equity Breakdown Visualization**  
+- Interactive pie charts for founder/pool distributions
+- Detailed tabular summaries 
+- Responsive design across devices
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+🤖 **AI-Powered Analysis**  
+- GPT-4 generated equity recommendations
+- Contribution-based scenario suggestions
+- Founder-specific commitment analysis
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+⚙️ **Advanced Configuration**
+- Multiple workspaces support
+- Reserved equity pool management
+- Custom weighting for financial/time/asset contributions
 
-### `npm test`
+## Built With
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+[![React](https://img.shields.io/badge/React-20232A?style=for-the-badge&logo=react&logoColor=61DAFB)](https://reactjs.org/)
+[![OpenAI](https://img.shields.io/badge/OpenAI-412991?style=for-the-badge&logo=openai&logoColor=white)](https://openai.com)
+[![Chart.js](https://img.shields.io/badge/Chart.js-FF6384?style=for-the-badge&logo=chartdotjs&logoColor=white)](https://www.chartjs.org/)
 
-### `npm run build`
+**Tech Stack:**
+- React 18 + Hooks
+- React Router 6
+- Chart.js + react-chartjs-2
+- OpenAI API (GPT-4)
+- LocalStorage persistence
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Getting Started
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### Prerequisites
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+- Node.js v16+
+- OpenAI API key
 
-### `npm run eject`
+### Installation
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+1. Clone the repository
+   ```bash
+   git clone https://github.com/yourusername/equity-calculator.git
+   cd equity-calculator
+   
+2. Install dependencies
+  npm install
+  
+3. Configure OpenAI API key
+Replace the placeholder in ReportPage.js:
+"Authorization": `Bearer YOUR_OPENAI_API_KEY`
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+4. Start the development server
+Environment Setup
+EQUITY_CALC/
+├── AI_API_KEY=sk-your-key-here           # OpenAI API key
+├── AI_MODEL=gpt-4                        # GPT model version
+└── AI_TEMPERATURE=0.7                    # Creativity vs precision
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+Warning
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+The current implementation contains client-side API key usage for demonstration purposes only. For production environments:
 
-## Learn More
+Move API communication to a backend server
+Implement proper authentication
+Use environment variables for secrets
+Add rate limiting
+Usage
+Core Workflow
+Start questionnaire ➔ /calculator
+Complete basic parameters (Q1-Q9)
+Configure advanced factors (Q10-Q14)
+Review summary ➔ /report
+Generate AI analysis (⚡ GPT-4 powered)
+Example AI Analysis
+"For Sarah (32% equity): This mid-range stake suggests you're balancing decision-making authority with shared responsibility. Consider implementing vesting schedules to align long-term commitment..."
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
+Available Scripts
+npm start
 
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+Contributing
+Fork the repository
+Create feature branch: git checkout -b feat/new-analysis
+Commit changes: git commit -am 'Add equity threshold alerts'
+Push to branch: git push origin feat/new-analysis
+Open pull request
