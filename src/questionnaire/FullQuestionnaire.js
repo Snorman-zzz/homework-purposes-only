@@ -8,6 +8,7 @@ import ReservedPoolQuestion from "./ReservedPoolQuestion";
 import DistributionAdjustmentQuestion from "./DistributionAdjustmentQuestion";
 import FactorAllocationQuestion from "./FactorAllocationQuestion";
 import EquityReportReadyModal from "../components/EquityReportReadyModal";
+import CategoryLimitModal from "../components/CategoryLimitModal";
 
 import "../styles.css";
 
@@ -30,6 +31,8 @@ function FullQuestionnaire() {
 
     const [currentIndex, setCurrentIndex] = useState(0);
     const [showReportModal, setShowReportModal] = useState(false);
+
+    const [showFactorLimitModal, setShowFactorLimitModal] = useState(false);
 
     // Merge visited flags for left nav
     const visitedAll = { ...visitedQuestionsPart1, ...visitedQuestionsPart2 };
@@ -308,6 +311,8 @@ function FullQuestionnaire() {
             case 11:
                 return (
                     <FactorAllocationQuestion
+                        showCategoryLimitModal={showFactorLimitModal}
+                        setShowCategoryLimitModal={setShowFactorLimitModal}
                         workspace={workspace}
                         questionIndex={11}
                         questionTitle="Equity Allocation for Core Factors"
@@ -324,6 +329,8 @@ function FullQuestionnaire() {
             case 12:
                 return (
                     <FactorAllocationQuestion
+                        showCategoryLimitModal={showFactorLimitModal}
+                        setShowCategoryLimitModal={setShowFactorLimitModal}
                         workspace={workspace}
                         questionIndex={12}
                         questionTitle="Pre-Formation Contributions"
@@ -346,6 +353,8 @@ function FullQuestionnaire() {
             case 13:
                 return (
                     <FactorAllocationQuestion
+                        showCategoryLimitModal={showFactorLimitModal}
+                        setShowCategoryLimitModal={setShowFactorLimitModal}
                         workspace={workspace}
                         questionIndex={13}
                         questionTitle="Role & Responsibility Consideration"
@@ -370,6 +379,8 @@ function FullQuestionnaire() {
             case 14:
                 return (
                     <FactorAllocationQuestion
+                        showCategoryLimitModal={showFactorLimitModal}
+                        setShowCategoryLimitModal={setShowFactorLimitModal}
                         workspace={workspace}
                         questionIndex={14}
                         questionTitle="Relevant Experience & Networks"
@@ -416,6 +427,22 @@ function FullQuestionnaire() {
 
     return (
         <div className="full-questionnaire-container">
+            {showFactorLimitModal && (
+                <CategoryLimitModal
+                    onClose={() => setShowFactorLimitModal(false)}
+                />
+            )}
+
+            {/* Existing content */}
+            {showReportModal && (
+                <EquityReportReadyModal
+                    onClose={() => setShowReportModal(false)}
+                    onViewReport={() => {
+                        setShowReportModal(false);
+                        navigate("/report");
+                    }}
+                />
+            )}
             <h2 className="questionnaire-title">Combined 14-Question Equity Calculator</h2>
 
             {showReportModal && (

@@ -7,6 +7,8 @@ import { TeamProvider } from "./TeamContext";
 import HomePage from "./pages/HomePage";
 import EquityCalculatorPage from "./pages/EquityCalculatorPage";
 import ReportPage from "./pages/ReportPage";
+import BillingPage from "./pages/BillingPage";
+import UpgradePage from "./pages/UpgradePage";
 
 function App() {
     return (
@@ -16,8 +18,8 @@ function App() {
                     <Route path="/home" element={<HomePage />} />
                     <Route path="/calculator" element={<EquityCalculatorPage />} />
                     <Route path="/report" element={<ReportPage />} />
-
-                    {/* If user hits root "/", go directly to /calculator */}
+                    <Route path="/billing" element={<BillingPage />} />
+                    <Route path="/upgrade" element={<UpgradePage />} />
                     <Route path="/" element={<Navigate to="/calculator" />} />
                 </Routes>
             </Router>

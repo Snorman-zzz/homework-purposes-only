@@ -10,15 +10,31 @@ function FactorAllocationQuestion({
                                       disclaimer,
                                       suggestedFactors,
                                       answerKey,
+                                      showCategoryLimitModal,
+                                      setShowCategoryLimitModal,
                                   }) {
-    const { updateWorkspaceData } = useTeamContext();
+    const { updateWorkspaceData,
+        canAddCustomCategory,
+        incrementCustomCategory,
+        plan  } = useTeamContext();
     const wsP2 = workspace.part2Answers || {};
     const founders = workspace.part1Answers.founderNames || [];
     const currentList = wsP2[answerKey] || [];
     const [newFactorName, setNewFactorName] = useState("");
 
     function handleAddFactor(name) {
+        const isCustom = name.startsWith("Custom:");
+
+        if (isCustom) {
+            if (!canAddCustomCategory()) {
+                setShowCategoryLimitModal(true);
+                return;
+            }
+            incrementCustomCategory();
+        }
+
         if (currentList.some((f) => f.factorName === name)) return;
+
         const newItem = { factorName: name, allocations: {} };
         founders.forEach((fn) => {
             newItem.allocations[fn] = "";
@@ -26,6 +42,14 @@ function FactorAllocationQuestion({
         const updatedList = [...currentList, newItem];
         const newP2 = { ...wsP2, [answerKey]: updatedList };
         updateWorkspaceData(workspace.id, { ...workspace, part2Answers: newP2 });
+    }
+
+    function handleAddCustomFactor() {
+        const trimmed = newFactorName.trim();
+        if (!trimmed) return;
+
+        handleAddFactor(`Custom: ${trimmed}`);
+        setNewFactorName("");
     }
 
     function handleRemoveFactor(name) {
@@ -80,13 +104,7 @@ function FactorAllocationQuestion({
                     style={{ marginRight: "8px" }}
                 />
                 <button
-                    onClick={() => {
-                        const trimmed = newFactorName.trim();
-                        if (trimmed) {
-                            handleAddFactor(trimmed);
-                            setNewFactorName("");
-                        }
-                    }}
+                    onClick={handleAddCustomFactor}
                     style={{
                         padding: "8px 16px",
                         backgroundColor: "#0F66CC",
@@ -114,7 +132,7 @@ function FactorAllocationQuestion({
                     }}
                 >
                     <thead>
-                    <tr style={{ backgroundColor: "#f2f2f2" }}>
+                    <tr style={{backgroundColor: "#f2f2f2" }}>
                         <th>Factor</th>
                         {founders.map((fn) => (
                             <th key={fn}>{fn}</th>

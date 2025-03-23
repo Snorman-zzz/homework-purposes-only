@@ -4,28 +4,48 @@ import { useNavigate } from "react-router-dom";
 import { useTeamContext } from "../TeamContext";
 import TopBar from "../ui/TopBar";
 import "../styles.css";
+import WorkspaceLimitModal from "../components//WorkspaceLimitModal";
 
 function HomePage() {
     const navigate = useNavigate();
     const {
+        plan,
         workspaces,
         addWorkspace,
         setActiveWorkspaceId,
         updateWorkspaceData,
+        canCreateWorkspace
     } = useTeamContext();
 
     // Store the last deleted workspace in local state to allow "undo."
     const [deletedEntry, setDeletedEntry] = useState(null);
     const [showHelpPanel, setShowHelpPanel] = useState(false);
+    const [showWorkspaceLimitModal, setShowWorkspaceLimitModal] = useState(false);
+    const [showUpgradePrompt, setShowUpgradePrompt] = useState(false);
 
+    // In the existing handleAdd function - UPDATE THIS:
     function handleAdd() {
+        if (!canCreateWorkspace()) {
+            setShowUpgradePrompt(true); // Changed from alert to state update
+            return;
+        }
+
         const name = prompt("Workspace name?");
         if (name) {
             const newWs = addWorkspace(name);
             setActiveWorkspaceId(newWs.id);
-            // navigate("/calculator"); // optional auto-open
         }
     }
+
+
+    // function handleAdd() {
+    //     const name = prompt("Workspace name?");
+    //     if (name) {
+    //         const newWs = addWorkspace(name);
+    //         setActiveWorkspaceId(newWs.id);
+    //         // navigate("/calculator"); // optional auto-open
+    //     }
+    // }
 
     // "Open" => go to the calculator
     function handleOpen(wsId) {
@@ -35,6 +55,10 @@ function HomePage() {
 
     // Duplicate workspace
     function handleDuplicate(ws) {
+        if (plan === "Build" && workspaces.length >= 1) {
+            setShowWorkspaceLimitModal(true);
+            return;
+        }
         const copyName = prompt("Name for the duplicated workspace?", `Copy of ${ws.name}`);
         if (copyName && copyName.trim()) {
             // create a brand-new workspace
@@ -68,6 +92,9 @@ function HomePage() {
     return (
         <div className="wrapper">
             <TopBar currentTab="home"/>
+            {showUpgradePrompt && (
+                <WorkspaceLimitModal onClose={() => setShowUpgradePrompt(false)} />
+            )}
             <div style={{
                 position: "fixed",
                 bottom: "20px",
@@ -87,7 +114,6 @@ function HomePage() {
                             Workspace Help
                         </p>
                         <p>Toggle between workspaces or create new ones.</p>
-                        <p>Click founder percentages to jump to their breakdown.</p>
                     </div>
                 )}
                 <button

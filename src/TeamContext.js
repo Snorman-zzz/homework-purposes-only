@@ -67,14 +67,41 @@ export function TeamProvider({ children }) {
         storedData?.showWelcomeModal !== false
     );
 
+    const [customCategoriesUsed, setCustomCategoriesUsed] = useState(
+        storedData?.customCategoriesUsed || 0
+    );
+
+    const [plan, setPlan] = useState(storedData?.plan || "Build");
+
+    const canAddCustomCategory = () => {
+        if (plan === "Build" && customCategoriesUsed >= 3) return false;
+        return true;
+    };
+
+    const incrementCustomCategory = () => {
+        setCustomCategoriesUsed(prev => prev + 1);
+    };
+
     useEffect(() => {
         const dataToStore = {
             workspaces,
             activeWorkspaceId,
             showWelcomeModal,
+            plan,
+            customCategoriesUsed
         };
         saveToLocalStorage(dataToStore);
-    }, [workspaces, activeWorkspaceId, showWelcomeModal]);
+    }, [workspaces, activeWorkspaceId, showWelcomeModal, plan, customCategoriesUsed]);
+
+    function canCreateWorkspace() {
+        if (plan === "Build" || plan === "Launch") return workspaces.length < 1;
+        if (plan === "Scale") return workspaces.length < 5;
+        return true; // Enterprise
+    }
+
+    function getCategoryLimit() {
+        return plan === "Build" ? 3 : Infinity;
+    }
 
     /** Create a new workspace and return it */
     function addWorkspace(name) {
@@ -256,6 +283,13 @@ export function TeamProvider({ children }) {
                 getWorkspaceById,
                 updateWorkspaceData,
                 calculateFinalEquity,
+                plan,
+                setPlan,
+                customCategoriesUsed,
+                canAddCustomCategory,
+                incrementCustomCategory,
+                canCreateWorkspace,
+                getCategoryLimit,
             }}
         >
             {children}

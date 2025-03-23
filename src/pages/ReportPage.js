@@ -3,12 +3,10 @@ import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useTeamContext } from "../TeamContext";
 import TopBar from "../ui/TopBar";
-import ReactMarkdown from 'react-markdown';
+import ReactMarkdown from "react-markdown";
 import { Pie } from "react-chartjs-2";
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from "chart.js";
 import "../styles.css";
-
-// For the placeholder illustration
 import placeholderArt from "../assets/placeholder_art.png";
 
 ChartJS.register(ArcElement, Tooltip, Legend);
@@ -21,7 +19,7 @@ function ReportPage() {
     const [error, setError] = useState("");
     const [showHelpPanel, setShowHelpPanel] = useState(false);
 
-    // If no workspace is selected at all
+    // Early returns if no workspace is selected or found
     if (!activeWorkspaceId) {
         return (
             <div className="wrapper">
@@ -30,8 +28,6 @@ function ReportPage() {
             </div>
         );
     }
-
-    // Get the current workspace
     const ws = getWorkspaceById(activeWorkspaceId);
     if (!ws) {
         return (
@@ -42,29 +38,17 @@ function ReportPage() {
         );
     }
 
-    // If the user has NOT completed the questionnaire => show placeholder
+    // If the questionnaire is not complete, show a placeholder screen
     if (!ws.isFullQuestionnaireComplete) {
         return (
             <div className="wrapper">
                 <TopBar currentTab="report" />
-
-                {/*
-          Container with position: relative so we can overlay text on top
-          of the placeholder image
-        */}
                 <div style={{ position: "relative", textAlign: "center", marginTop: "32px" }}>
-                    {/* The line-drawing placeholder image */}
                     <img
                         src={placeholderArt}
                         alt="placeholder"
-                        style={{width: "100%", maxWidth: "800px", marginLeft: "-100px"}}
+                        style={{ width: "100%", maxWidth: "800px", marginLeft: "-100px" }}
                     />
-
-                    {/*
-            Overlay container for text & button
-            - absolute positioning
-            - backgroundColor: "rgba(255,255,255,0.8)" for a slight white overlay
-          */}
                     <div
                         style={{
                             position: "absolute",
@@ -78,9 +62,7 @@ function ReportPage() {
                             maxWidth: "80%",
                         }}
                     >
-                        <h2 style={{ marginBottom: "8px" }}>
-                            The secret of getting ahead is getting started
-                        </h2>
+                        <h2 style={{ marginBottom: "8px" }}>The secret of getting ahead is getting started</h2>
                         <p style={{ marginBottom: "16px" }}>
                             To calculate your equity split, get started with the questionnaires below.
                         </p>
@@ -104,13 +86,12 @@ function ReportPage() {
         );
     }
 
-    // ------------------------------
-    // Otherwise, user completed the questionnaire => show final report:
+    // Otherwise, if the questionnaire is complete, show the final report
     const { finalEquityMap } = calculateFinalEquity();
     const reservedPools = ws.part1Answers.reservedPools || [];
     const founderEntries = Object.entries(finalEquityMap || {});
 
-    // Build arrays for the pie chart
+    // Build arrays for the combined pie chart (founders + reserved pools)
     const pieLabels = [];
     const pieVals = [];
     founderEntries.forEach(([fn, eq]) => {
@@ -143,49 +124,63 @@ function ReportPage() {
         ],
     };
 
-    // Use the company name if present, else fallback to workspace name
+    // Use the company name if provided; otherwise, fallback to the workspace name
     const companyName = ws.part1Answers.companyName || ws.name;
 
+    // --- Local LLM integration using Ollama ---
+    // This function calls the local LLM endpoint (assumed to be provided by Ollama running Llama 3)
     async function getEquityAnswer(prompt) {
-        const apiKey = process.env.REACT_APP_OPENAI_API_KEY;
         try {
-            const response = await fetch('https://api.openai.com/v1/chat/completions', {
-                method: 'POST',
+            const response = await fetch("http://localhost:11434/api/generate", {
+                method: "POST",
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${apiKey}`
+                    "Content-Type": "application/json",
                 },
                 body: JSON.stringify({
-                    model: "gpt-4o-mini",
-                    messages: [{ role: "user", content: prompt }]
-                })
+                    prompt: prompt,
+                    model: "llama3.2:latest",
+                    // stream: true is the default
+                }),
             });
 
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error?.message || 'API request failed');
-            return data.choices[0].message.content;
+            const reader = response.body.getReader();
+            const decoder = new TextDecoder();
+            let fullResponse = "";
+
+            while (true) {
+                const { done, value } = await reader.read();
+                if (done) break;
+
+                const chunk = decoder.decode(value);
+                const parsedChunk = JSON.parse(chunk);
+                fullResponse += parsedChunk.response;
+            }
+
+            return fullResponse;
+
         } catch (err) {
-            console.error('API Error:', err);
+            console.error("Local LLM API Error:", err);
             throw err;
         }
     }
 
+
+    // Handler for generating the AI report
     const handleGenerateAIReport = async () => {
         setIsLoading(true);
-        setError('');
-        setAiResponse('');
+        setError("");
+        setAiResponse("");
 
         try {
             // Build data strings from context
             const contributionBreakdown = reservedPools
                 .map(rp => `${rp.name}: ${rp.weight.toFixed(2)}%`)
                 .join(", ");
-
             const teamBreakdown = founderEntries
                 .map(([fn, eq]) => `${fn}: ${eq.toFixed(2)}%`)
                 .join(", ");
 
-            // Construct the detailed prompt
+            // Construct the detailed prompt for the local LLM
             const prompt = `Using the following equity breakdown data, generate an AI report that provides a detailed explanation for each founder's equity position. Apply these rules for each founder based on their total equity percentage:
 
 - If the total equity is between 85% and 100%:
@@ -216,8 +211,8 @@ Generate the report accordingly for each founder. Focus on explaining each found
             setAiResponse(answer);
         } catch (err) {
             let errorMessage = err.message;
-            if (errorMessage.includes('Rate limit')) errorMessage = "API quota exceeded - check your billing";
-            if (errorMessage.includes('Incorrect API')) errorMessage = "Invalid API key - check configuration";
+            if (errorMessage.includes("Rate limit")) errorMessage = "API quota exceeded - check your billing";
+            if (errorMessage.includes("Incorrect API")) errorMessage = "Invalid API key - check configuration";
             setError(errorMessage);
         } finally {
             setIsLoading(false);
@@ -226,7 +221,8 @@ Generate the report accordingly for each founder. Focus on explaining each found
 
     return (
         <div className="wrapper">
-            <TopBar currentTab="report"/>
+            <TopBar currentTab="report" />
+
             <div
                 style={{
                     position: "fixed",
@@ -249,57 +245,35 @@ Generate the report accordingly for each founder. Focus on explaining each found
                             color: "#28435a"
                         }}
                     >
-                        <p style={{marginBottom: "12px", fontWeight: "600"}}>
-                            Founder Insight Articles:
-                        </p>
-                        <ul style={{listStyle: "none", padding: 0, margin: 0}}>
-                            <li style={{marginBottom: "8px"}}>
-                                <a
-                                    href="https://thecofoundershub.com/"
-                                    target="_blank"
-                                    rel="noreferrer"
-                                    style={{color: "#0F66CC", textDecoration: "underline"}}
-                                >
+                        <p style={{ marginBottom: "12px", fontWeight: "600" }}>Founder Insight Articles:</p>
+                        <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
+                            <li style={{ marginBottom: "8px" }}>
+                                <a href="https://thecofoundershub.com/" target="_blank" rel="noreferrer" style={{ color: "#0F66CC", textDecoration: "underline" }}>
                                     📌 Will you VEST? 4 years with 1 year cliff
                                 </a>
                             </li>
-                            <li style={{marginBottom: "8px"}}>
-                                <a href="https://thecofoundershub.com/"
-                                   target="_blank"
-                                   rel="noreferrer"
-                                   style={{color: "#0F66CC", textDecoration: "underline"}}>
+                            <li style={{ marginBottom: "8px" }}>
+                                <a href="https://thecofoundershub.com/" target="_blank" rel="noreferrer" style={{ color: "#0F66CC", textDecoration: "underline" }}>
                                     💡 Is investment a loan to be paid back from Revenue?
                                 </a>
                             </li>
-                            <li style={{marginBottom: "8px"}}>
-                                <a href="https://thecofoundershub.com/"
-                                   target="_blank"
-                                   rel="noreferrer"
-                                   style={{color: "#0F66CC", textDecoration: "underline"}}>
+                            <li style={{ marginBottom: "8px" }}>
+                                <a href="https://thecofoundershub.com/" target="_blank" rel="noreferrer" style={{ color: "#0F66CC", textDecoration: "underline" }}>
                                     🏢 Asset ownership: Company vs Personal
                                 </a>
                             </li>
-                            <li style={{marginBottom: "8px"}}>
-                                <a href="https://thecofoundershub.com/"
-                                   target="_blank"
-                                   rel="noreferrer"
-                                   style={{color: "#0F66CC", textDecoration: "underline"}}>
+                            <li style={{ marginBottom: "8px" }}>
+                                <a href="https://thecofoundershub.com/" target="_blank" rel="noreferrer" style={{ color: "#0F66CC", textDecoration: "underline" }}>
                                     ⚖️ Liability sunset clauses & equity redistribution
                                 </a>
                             </li>
-                            <li style={{marginBottom: "8px"}}>
-                                <a href="https://thecofoundershub.com/"
-                                   target="_blank"
-                                   rel="noreferrer"
-                                   style={{color: "#0F66CC", textDecoration: "underline"}}>
+                            <li style={{ marginBottom: "8px" }}>
+                                <a href="https://thecofoundershub.com/" target="_blank" rel="noreferrer" style={{ color: "#0F66CC", textDecoration: "underline" }}>
                                     📋 Founder expense responsibilities
                                 </a>
                             </li>
                             <li>
-                                <a href="https://thecofoundershub.com/"
-                                   target="_blank"
-                                   rel="noreferrer"
-                                   style={{color: "#0F66CC", textDecoration: "underline"}}>
+                                <a href="https://thecofoundershub.com/" target="_blank" rel="noreferrer" style={{ color: "#0F66CC", textDecoration: "underline" }}>
                                     💭 Final thoughts on equity distribution
                                 </a>
                             </li>
@@ -324,16 +298,12 @@ Generate the report accordingly for each founder. Focus on explaining each found
                     ?
                 </button>
             </div>
+
             <h1>Equity Report for {companyName}</h1>
 
             {/* AI Reporting Section */}
-            <div className="section" style={{marginTop: "32px"}}>
+            <div className="section" style={{ marginTop: "32px" }}>
                 <h2>AI Equity Analysis</h2>
-
-                <div style={{marginBottom: "16px"}}>
-
-                </div>
-
                 <button
                     onClick={handleGenerateAIReport}
                     disabled={isLoading}
@@ -345,45 +315,48 @@ Generate the report accordingly for each founder. Focus on explaining each found
                         borderRadius: "6px",
                         cursor: "pointer",
                         fontSize: "16px",
-                        transition: "background-color 0.2s"
+                        transition: "background-color 0.2s",
                     }}
                 >
                     {isLoading ? "Analyzing..." : "Generate AI Report"}
                 </button>
-
                 {error && (
-                    <div style={{
-                        marginTop: "16px",
-                        padding: "12px",
-                        backgroundColor: "#FEE2E2",
-                        color: "#B91C1C",
-                        borderRadius: "4px"
-                    }}>
+                    <div
+                        style={{
+                            marginTop: "16px",
+                            padding: "12px",
+                            backgroundColor: "#FEE2E2",
+                            color: "#B91C1C",
+                            borderRadius: "4px",
+                        }}
+                    >
                         Error: {error}
                     </div>
                 )}
-
                 {aiResponse && (
-                    <div className="report-md" style={{
-                        marginTop: "24px",
-                        padding: "20px",
-                        backgroundColor: "#F3F4F6",
-                        borderRadius: "8px",
-                    }}>
+                    <div
+                        className="report-md"
+                        style={{
+                            marginTop: "24px",
+                            padding: "20px",
+                            backgroundColor: "#F3F4F6",
+                            borderRadius: "8px",
+                        }}
+                    >
                         <h3>AI Analysis Result</h3>
-                        <div style={{
-                            marginTop: "12px",
-                            lineHeight: 1.6,
-                            fontFamily: "'Inter', sans-serif",
-                            color: "#1F2937"
-                        }}>
+                        <div
+                            style={{
+                                marginTop: "12px",
+                                lineHeight: 1.6,
+                                fontFamily: "'Inter', sans-serif",
+                                color: "#1F2937",
+                            }}
+                        >
                             <ReactMarkdown>{aiResponse}</ReactMarkdown>
                         </div>
                     </div>
                 )}
-
             </div>
-
 
             {/* Founders Table */}
             <div className="section">
@@ -430,10 +403,10 @@ Generate the report accordingly for each founder. Focus on explaining each found
             )}
 
             {/* Pie Chart */}
-            <div className="section" style={{marginTop: "24px"}}>
+            <div className="section" style={{ marginTop: "24px" }}>
                 <h2>Combined Pie: Founders + Pools</h2>
-                <div style={{height: "300px", maxWidth: "600px"}}>
-                    <Pie data={chartData} options={{maintainAspectRatio: false}}/>
+                <div style={{ height: "300px", maxWidth: "600px" }}>
+                    <Pie data={chartData} options={{ maintainAspectRatio: false }} />
                 </div>
             </div>
         </div>

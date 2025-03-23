@@ -243,3 +243,53 @@ body, html {
     margin: 16px 0;
 }
 
+/* Plan Cards */
+.plans-container {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin-top: 2rem;
+}
+
+.plan-card {
+    background: #fff;
+    border: 1px solid #ececec;
+    border-radius: 8px;
+    padding: 1.5rem;
+    text-align: center;
+}
+
+.plan-card h3 {
+    color: #0F66CC;
+    margin: 0 0 1rem;
+}
+
+.plan-card .price {
+    font-size: 2rem;
+    font-weight: 700;
+    margin: 1rem 0;
+}
+
+.plan-card button {
+    width: 100%;
+    padding: 0.75rem;
+    margin-top: 1rem;
+}
+
+/* Modals */
+.category-limit-modal {
+    background: white;
+    padding: 2rem;
+    border-radius: 8px;
+    max-width: 400px;
+    text-align: center;
+}
+
+.modal-actions {
+    margin-top: 1.5rem;
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+}
+
+

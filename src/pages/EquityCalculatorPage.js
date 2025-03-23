@@ -5,20 +5,12 @@ import TopBar from "../ui/TopBar";
 import FullQuestionnaire from "../questionnaire/FullQuestionnaire";
 import WelcomeModal from "../ui/WelcomeModal";
 import "../styles.css";
+import CategoryLimitModal from '../components/CategoryLimitModal';
 
 function EquityCalculatorPage() {
-    const { activeWorkspaceId, getWorkspaceById, showWelcomeModal, setShowWelcomeModal } = useTeamContext();
+    const { plan, activeWorkspaceId, getWorkspaceById, showWelcomeModal, setShowWelcomeModal } = useTeamContext();
     const [showHelpPanel, setShowHelpPanel] = useState(false);
-
-    if (!activeWorkspaceId) {
-        return (
-            <div className="wrapper">
-                <TopBar currentTab="calculator" />
-                <h2>No workspace selected</h2>
-                <p>Please go to Home and open one.</p>
-            </div>
-        );
-    }
+    const [showFactorLimitModal, setShowFactorLimitModal] = useState(false);
 
     const ws = getWorkspaceById(activeWorkspaceId);
     if (!ws) {
@@ -32,6 +24,7 @@ function EquityCalculatorPage() {
 
     return (
         <div className="wrapper">
+            {showFactorLimitModal && <CategoryLimitModal onClose={() => setShowFactorLimitModal(false)} />}
             <TopBar currentTab="calculator"/>
             <div
                 style={{
